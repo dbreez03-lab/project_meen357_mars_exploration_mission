@@ -1,5 +1,7 @@
 import numpy as np
 import math
+from scipy.special import erf
+
 speed_reducer = {
     "type": 'reverted',
     'diam_pinion': 0.04, #m
@@ -56,6 +58,9 @@ def tau_dcmotor(omega,motor):
   w_arr = np.atleast_1d(omega)
 
   tau_arr = tau_s - ((tau_s - tau_nl) / omega_nl) * w_arr
+  
+  tau_arr[w_arr < 0] = tau_s
+  tau_arr[w_arr > omega_nl] = 0
 
   if is_scalar:
     return tau_arr[0]
@@ -89,10 +94,10 @@ def F_net(omega, terrain_angle, rover, planet, Crr):
     Fgt = F_gravity(terrain_angle, rover, planet)
     Frr = F_rolling(omega, terrain_angle, rover, planet, Crr)
     
-    f_net = Fd + Fgt - Frr
+    f_net = Fd + Fgt + Frr
     
     return f_net
-    
+  
 def get_mass(rover):
 #computes the total mass of the rover. uses info in rover dict
    
@@ -111,8 +116,8 @@ def get_mass(rover):
     return(m)
    
 
-def get_gear_ratio(speed):
-    if isinstance(speed,dict) != True:
+def get_gear_ratio(speed_reducer):
+    if isinstance(speed_reducer,dict) != True:
         raise Exception('Input must be a dict')
        
     if speed_reducer['type'].lower() != 'reverted':
@@ -177,13 +182,13 @@ def F_gravity(terrain_angle, rover, planet):
 
 
 def F_rolling(omega, terrain_angle, rover, planet, Crr):
-    if ((np.isscalar(omega) or isinstance(omega, np.ndarray)) or (np.isscalar(terrain_angle) or isinstance(terrain_angle, np.ndarray))) != True:
+    if ((np.isscalar(omega) or isinstance(omega, np.ndarray)) and (np.isscalar(terrain_angle) or isinstance(terrain_angle, np.ndarray))) != True:
         raise Exception('Omega and/or Terrain Angle must be a scalar or numpy array')
     elif np.any(terrain_angle < -75) or np.any(terrain_angle > 75):
         raise Exception('Terrain angle must be between -75 and 75 degrees')
 
     #B
-    if (isinstance(rover, dict) or isinstance(planet, dict))!= True:
+    if (isinstance(rover, dict) and isinstance(planet, dict))!= True:
         raise Exception('Rover and/or Planet must be a dictionary')
     #C  
     if np.isscalar(Crr) != True or Crr <= 0:
@@ -207,6 +212,7 @@ def F_rolling(omega, terrain_angle, rover, planet, Crr):
     Fn = m * g * np.cos(alpha)
 
     Frr_simple = Crr * Fn
-    Frr = -math.erf(40 * v_rover) * Frr_simple
+    Frr = -erf(40 * v_rover) * Frr_simple
 
     return Frr
+
