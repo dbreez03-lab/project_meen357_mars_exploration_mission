@@ -63,27 +63,36 @@ def tau_dcmotor(omega,motor):
     return tau_arr
     
 def F_net(omega, terrain_angle, rover, planet, Crr):
-  arr_omega = np.array(omega)
-  if arr_omega.ndim > 1:
-    raise Exception('omega must be a scalar or 1D array')
-  arr_terrain_angle = np.array(terrain_angle)
-  if arr_terrain_angle.ndim > 1:
-    raise Exception('terrain angle must be a scalar or 1D array')
+    if not isinstance(rover,dict):
+        raise Exception('rover must be a dictionary')
+    if not isinstance(planet,dict):
+        raise Exception('planet must be a dictionary')
+    if not np.isscalar(Crr) or Crr <= 0:
+        raise Exception('Crr must be a scalar')
+        
+    arr_omega = np.array(omega)
+    arr_terrain_angle = np.array(terrain_angle)
+    
+    if arr_omega.ndim > 1:
+        raise Exception('omega must be a scalar or 1D array')
+    if arr_terrain_angle.ndim > 1:
+        raise Exception('terrain angle must be a scalar or 1D array')
+        
+    if arr_omega.size != arr_terrain_angle.size:
+        raise Exception('omega and terrain_angle must be the same size')
+    if np.any(arr_terrain_angle < -75):
+        raise Exception('terrain angle must be between -75 and 75 degrees')
+    elif np.any(arr_terrain_angle > 75):
+        raise Exception('terrain angle must be between -75 and 75 degrees')
 
-  if terrain_angle < -75:
-    raise Exception('terrain angle must be between -75 and 75 degrees')
-  elif terrain_angle > 75:
-    raise Exception('terrain angle must be between -75 and 75 degrees')
-  
-  if not isinstance(rover,dict):
-    raise Exception('rover must be a dictionary')
-  if not isinstance(planet,dict):
-    raise Exception('planet must be a dictionary')
-
-  arr_crr = np.array(Crr)
-  if not np.isscalar(arr_crr):
-    raise Exception('Crr must be a scalar')
-  
+    Fd = F_drive(omega, rover)
+    Fgt = F_gravity(terrain_angle, rover, planet)
+    Frr = F_rolling(omega, terrain_angle, rover, planet, Crr)
+    
+    f_net = Fd + Fgt - Frr
+    
+    return f_net
+    
 def get_mass(rover):
 #computes the total mass of the rover. uses info in rover dict
    
