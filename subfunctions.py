@@ -73,7 +73,7 @@ def F_net(omega, terrain_angle, rover, planet, Crr):
     if not isinstance(planet,dict):
         raise Exception('planet must be a dictionary')
     if not np.isscalar(Crr) or Crr <= 0:
-        raise Exception('Crr must be a scalar')
+        raise Exception('Crr must be a positive scalar')
         
     arr_omega = np.array(omega)
     arr_terrain_angle = np.array(terrain_angle)
