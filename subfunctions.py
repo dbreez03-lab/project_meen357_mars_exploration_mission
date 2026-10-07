@@ -17,6 +17,8 @@ motor = {
     'torque_noload': 0, #N/m
     'speed_noload': 3.80, #rad/s
     'mass': 5.0 #kg
+    'effcy_tau': np.array([0, 10, 20, 40, 70, 165]),
+    'effcy': np.array([0, 0.55, 0.75, 0.71, 0.50, 0.05])
 }
 chassis = {
     'mass': 659.0 #kg
@@ -215,4 +217,3 @@ def F_rolling(omega, terrain_angle, rover, planet, Crr):
     Frr = -erf(40 * v_rover) * Frr_simple
 
     return Frr
-
