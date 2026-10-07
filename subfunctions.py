@@ -221,7 +221,7 @@ def F_rolling(omega, terrain_angle, rover, planet, Crr):
 def motorW(v, rover):
     if((isinstance(v, np.ndarray)) or (np.isscalar(v))) != True:
         raise Exception('Translational velocity must be a scalar or numpy array')
-    elif(isinstance(rover, dict) != True):
+    if(isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')
     
     r = (rover['wheel_assembly']['wheel']['radius'])
