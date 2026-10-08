@@ -1,6 +1,8 @@
 import numpy as np
 import math
 from scipy.special import erf
+from scipy.interpolate import interp1d
+from scipy.integrate import simpson
 
 speed_reducer = {
     "type": 'reverted',
@@ -264,3 +266,37 @@ def rover_dynamics(t, y, rover, planet, experiment):
     dydt = np.array([a,v])
     
     return dydt
+
+def mechpower(v, rover):
+    if((isinstance(v, np.ndarray)) or (np.isscalar(v))) != True:
+        raise Exception('Translational velocity must be a scalar or numpy array')
+    if(isinstance(rover, dict) != True):
+        raise Exception('Rover must be a dictionary')
+    
+    omega = motorW(v, rover)   
+    tau = tau_dcmotor(omega, motor)
+    P = tau * omega
+    
+    return P
+
+def battenergy(t, v, rover):
+    if len(t) != len(v):
+        raise Exception('Array t and v are not the same size')
+    if isinstance(rover, dict) != True:
+        raise Exception('Rover is not a dictionary')
+        
+    omega = motorW(v, rover) 
+    tau = tau_dcmotor(omega, motor)
+    
+    power = mechpower(v, rover)
+    
+    effcy = motor['effcy']
+    effcy_tau = motor['effcy_tau']
+
+    effcy_fun = interp1d(effcy_tau, effcy, kind = 'cubic', fill_value = 'extrapolate')
+    effcy = effcy_fun(tau)
+
+    
+    E = simpson(effcy*power, x=t)
+    
+    return E
