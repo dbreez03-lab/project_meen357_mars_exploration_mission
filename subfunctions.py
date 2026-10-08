@@ -228,3 +228,39 @@ def motorW(v, rover):
     w = v * r
     
     return w
+
+def rover_dynamics(t, y, rover, planet, experiment):
+    if np.isscalar(t) != True:
+        raise Exception('Time sample must be a scalar')
+        
+    if isinstance(y, np.ndarray) != True:
+        raise Exception('y must be a 1D numpy array')
+    
+    if (isinstance(rover, dict) != True):
+        raise Exception('Rover must be a dictionary')   
+        
+    if (isinstance(planet, dict) != True):
+        raise Exception('Planet must be a dictionary')
+        
+    if (isinstance(experiment, dict) != True):
+        raise Exception('Experiment must be a dictionary')
+        
+    v = y[0]
+    x = y[1]
+    
+    alpha_fun = interp1d(alpha_dist, alpha_deg, kind = 'cubic', fill_value='extrapolate')
+    terrain_angle = alpha_fun(x)
+    
+    w = motorW(v, rover) #same as omega
+    
+    Crr = (experiment['Crr'])
+    
+    f_net = F_net(w, terrain_angle, rover, planet, Crr)
+    
+    mass = get_mass(rover)
+    
+    a = f_net/mass
+    
+    dydt = np.array([a,v])
+    
+    return dydt
