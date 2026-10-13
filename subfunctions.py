@@ -228,7 +228,6 @@ def motorW(v, rover):
     
     r = (rover['wheel_assembly']['wheel']['radius'])
     speed_reducer = (rover['wheel_assembly']['speed_reducer'])
-    
     Ng = get_gear_ratio(speed_reducer)
     
     w = Ng * v / r
@@ -238,16 +237,12 @@ def motorW(v, rover):
 def rover_dynamics(t, y, rover, planet, experiment):
     if np.isscalar(t) != True:
         raise Exception('Time sample must be a scalar')
-        
     if isinstance(y, np.ndarray) != True:
         raise Exception('y must be a 1D numpy array')
-    
     if (isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')   
-        
     if (isinstance(planet, dict) != True):
-        raise Exception('Planet must be a dictionary')
-        
+        raise Exception('Planet must be a dictionary')  
     if (isinstance(experiment, dict) != True):
         raise Exception('Experiment must be a dictionary')
         
@@ -258,13 +253,9 @@ def rover_dynamics(t, y, rover, planet, experiment):
     terrain_angle = alpha_fun(x)
     
     w = motorW(v, rover) #same as omega
-    
     Crr = (experiment['Crr'])
-    
     f_net = F_net(w, terrain_angle, rover, planet, Crr)
-    
     mass = get_mass(rover)
-    
     a = f_net/mass
     
     dydt = np.array([a,v])
