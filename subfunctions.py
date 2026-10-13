@@ -3,7 +3,9 @@ import math
 from scipy.special import erf
 from scipy.interpolate import interp1d
 from scipy.integrate import simpson
+from define_experiment import experiment1
 
+experiment, end_event = experiment1()
 speed_reducer = {
     "type": 'reverted',
     'diam_pinion': 0.04, #m
@@ -18,7 +20,7 @@ motor = {
     'torque_stall': 170, #N/m
     'torque_noload': 0, #N/m
     'speed_noload': 3.80, #rad/s
-    'mass': 5.0 #kg
+    'mass': 5.0, #kg
     'effcy_tau': np.array([0, 10, 20, 40, 70, 165]),
     'effcy': np.array([0, 0.55, 0.75, 0.71, 0.50, 0.05])
 }
@@ -223,6 +225,8 @@ def F_rolling(omega, terrain_angle, rover, planet, Crr):
 def motorW(v, rover):
     if((isinstance(v, np.ndarray)) or (np.isscalar(v))) != True:
         raise Exception('Translational velocity must be a scalar or numpy array')
+    if v.ndim > 1:
+        raise Exception('Translational velocity can not be a dictionary')
     if (isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')
     
@@ -237,8 +241,8 @@ def motorW(v, rover):
 def rover_dynamics(t, y, rover, planet, experiment):
     if np.isscalar(t) != True:
         raise Exception('Time sample must be a scalar')
-    if isinstance(y, np.ndarray) != True:
-        raise Exception('y must be a 1D numpy array')
+    if (y.ndim == 1 or y.size == 2) != True :
+        raise Exception('y must be a two element array')
     if (isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')   
     if (isinstance(planet, dict) != True):
@@ -249,7 +253,7 @@ def rover_dynamics(t, y, rover, planet, experiment):
     v = y[0]
     x = y[1]
     
-    alpha_fun = interp1d(alpha_dist, alpha_deg, kind = 'cubic', fill_value='extrapolate')
+    alpha_fun = interp1d(experiment[alpha_dist], experiment[alpha_deg], kind = 'cubic', fill_value='extrapolate')
     terrain_angle = alpha_fun(x)
     
     w = motorW(v, rover) #same as omega
