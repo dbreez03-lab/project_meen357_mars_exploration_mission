@@ -6,6 +6,7 @@ from scipy.integrate import simpson
 from define_experiment import experiment1
 
 experiment, end_event = experiment1()
+
 speed_reducer = {
     "type": 'reverted',
     'diam_pinion': 0.04, #m
@@ -299,3 +300,65 @@ def battenergy(t, v, rover):
     E = simpson(effcy*power, x=t)
     
     return E
+
+def simulate_rover(rover, planet, experiment, end_event):
+    if isinstance(rover, dict) != True:
+        raise Exception('Rover must be a dictonary')
+    if isinstance(planet, dict) != True:
+        raise Exception('Planet must be a dictonary')
+    if isinstance(experiment, dict) != True:
+        raise Exception('Experiment must be a dictonary')
+    if isinstance(end_event, dict) != True:
+        raise Exception('end_event must be a dictonary')
+        
+    tspan = experiment['time_range']
+    y0 = experiment['initial_conditions']
+    events = end_of_mission_event(end_event)
+    
+    fun = lambda t, y: rover_dynamics(t, y, rover, planet, experiment)
+    sol = solve_ivp (fun, tspan, y0, method = 'RK45', max_step = 0.1, events = events)
+    t = sol.t
+    velo = sol.y[0, :]
+    x = sol.y[1, :]
+    
+    rover['telemetry'] = {}
+    rover['telemetry']['Time'] = t
+    rover['telemetry']['velocity'] = velo
+    rover['telemetry']['position'] = x
+    rover['telemetry']['completion_time'] = t[-1]-t[0]
+    rover['telemetry']['distance_traveled'] = x[-1] - x[0]
+    rover['telemetry']['max_velocity'] = np.max[velo]
+    rover['telemetry']['average_velocity'] = (x[-1] - x[0])/(t[-1]-t[0])
+    rover['telemetry']['power'] = mechpower(v, rover)
+    rover['telemetry']['battery_energy'] = battery_energy(t, v, rover)
+    rover['telemetry']['energy_per_distance'] = (battery_energy(t, v, rover))/(x[-1] - x[0])
+
+    return rover
+    
+def end_of_mission_event(end_event):
+    """
+    Defines an event that terminates the mission simulation. Mission is over
+    when rover reaches a certain distance, has moved for a maximum simulation
+    time or has reached a minimum velocity.
+    """
+    mission_distance = end_event['max_distance']
+    mission_max_time = end_event['max_time']
+    mission_min_velocity = end_event['min_velocity']
+    # Assume that y[1] is the distance traveled
+    distance_left = lambda t,y: mission_distance - y[1]
+    distance_left.terminal = True
+    time_left = lambda t,y: mission_max_time - t
+    time_left.terminal = True
+    velocity_threshold = lambda t,y: y[0] - mission_min_velocity;
+    velocity_threshold.terminal = True
+    velocity_threshold.direction = -1
+    # terminal indicates whether any of the conditions can lead to the
+    # termination of the ODE solver. In this case all conditions can terminate
+    # the simulation independently.
+    # direction indicates whether the direction along which the different
+    # conditions is reached matters or does not matter. In this case, only
+    # the direction in which the velocity treshold is arrived at matters
+    # (negative)
+    events = [distance_left, time_left, velocity_threshold]
+    return events
+
