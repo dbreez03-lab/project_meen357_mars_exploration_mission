@@ -3,6 +3,7 @@ import math
 from scipy.special import erf
 from scipy.interpolate import interp1d
 from scipy.integrate import simpson
+from scipy.integrate import solve_ivp
 from define_experiment import experiment1
 
 experiment, end_event = experiment1()
@@ -254,7 +255,7 @@ def rover_dynamics(t, y, rover, planet, experiment):
     v = y[0]
     x = y[1]
     
-    alpha_fun = interp1d(experiment[alpha_dist], experiment[alpha_deg], kind = 'cubic', fill_value='extrapolate')
+    alpha_fun = interp1d(experiment['alpha_dist'], experiment['alpha_deg'], kind = 'cubic', fill_value='extrapolate')
     terrain_angle = alpha_fun(x)
     
     w = motorW(v, rover) #same as omega
@@ -316,23 +317,23 @@ def simulate_rover(rover, planet, experiment, end_event):
     events = end_of_mission_event(end_event)
     
     fun = lambda t, y: rover_dynamics(t, y, rover, planet, experiment)
-    sol = solve_ivp (fun, tspan, y0, method = 'RK45', max_step = 0.1, events = events)
+    sol = solve_ivp (fun, tspan, y0, method = 'RK45', max_step = 0.5, events = events)
     t = sol.t
-    velo = sol.y[0, :]
+    v = sol.y[0, :]
     x = sol.y[1, :]
     
     rover['telemetry'] = {}
     rover['telemetry']['Time'] = t
-    rover['telemetry']['velocity'] = velo
+    rover['telemetry']['velocity'] = v
     rover['telemetry']['position'] = x
     rover['telemetry']['completion_time'] = t[-1]-t[0]
     rover['telemetry']['distance_traveled'] = x[-1] - x[0]
-    rover['telemetry']['max_velocity'] = np.max[velo]
+    rover['telemetry']['max_velocity'] = np.max(v)
     rover['telemetry']['average_velocity'] = (x[-1] - x[0])/(t[-1]-t[0])
     rover['telemetry']['power'] = mechpower(v, rover)
-    rover['telemetry']['battery_energy'] = battery_energy(t, v, rover)
-    rover['telemetry']['energy_per_distance'] = (battery_energy(t, v, rover))/(x[-1] - x[0])
-
+    rover['telemetry']['battery_energy'] = battenergy(t, v, rover)
+    rover['telemetry']['energy_per_distance'] = (battenergy(t, v, rover))/(x[-1] - x[0])
+    
     return rover
     
 def end_of_mission_event(end_event):
