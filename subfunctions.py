@@ -318,7 +318,7 @@ def battenergy(t, v, rover):
     effcy = effcy_fun(tau)
 
     
-    E = simpson(effcy * 6 *power, x=t)
+    E = simpson(6 * power/effcy, x=t)
     
     return E
 
