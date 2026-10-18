@@ -11,6 +11,9 @@ tau_max = motor['torque_stall']
 tau_min = motor['torque_noload']
 
 #interpolates values of effcy_tau(x) and effcy(y) using a third order polynomial 'cubic'
+#third order polynomial interpolation passes through 4 data points and for each value runs through
+#the general form P(x) = ax^3 + bx^2 + cx + d and is a system of equations that solves for the any value
+#corresponding to effcy
 effcy_fun = interp1d(effcy_tau, effcy, kind = 'cubic', fill_value = 'extrapolate')
 
 tau = np.linspace(tau_min, tau_max, 100)
