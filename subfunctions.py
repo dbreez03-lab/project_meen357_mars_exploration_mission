@@ -3,7 +3,6 @@ import math
 from scipy.special import erf
 from scipy.interpolate import interp1d
 from scipy.integrate import simpson
-from scipy.integrate import quad
 from scipy.integrate import solve_ivp
 from define_experiment import experiment1
 
@@ -321,8 +320,10 @@ def battenergy(t, v, rover):
     effcy_fun = interp1d(effcy_tau, effcy, kind = 'cubic', fill_value = 'extrapolate')
     effcy = effcy_fun(tau)
 
+    battery_power = np.divide(6 * power, effcy, out=np.zeros_like(power, dtype=float), where=effcy != 0)
+    E = simpson(battery_power, x=t)
     
-    E = quad(6 * power/effcy, x=t)
+    E = simpson(6 * power/effcy, x=t)
     
     return E
 
