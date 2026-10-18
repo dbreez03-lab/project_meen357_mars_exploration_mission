@@ -290,7 +290,8 @@ def mechpower(v, rover):
     if(isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')
     
-    omega = motorW(v, rover)   
+    omega = motorW(v, rover)
+    motor = rover['wheel_assembly']['motor']
     tau = tau_dcmotor(omega, motor)
     P = tau * omega
     
@@ -310,6 +311,7 @@ def battenergy(t, v, rover):
         
     power = mechpower(v, rover)
     omega = motorW(v, rover)   
+    motor = rover['wheel_assembly']['motor']
     tau = tau_dcmotor(omega, motor)
     
     effcy = rover['wheel_assembly']['motor']['effcy']
