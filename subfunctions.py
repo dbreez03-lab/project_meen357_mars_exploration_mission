@@ -228,7 +228,7 @@ def motorW(v, rover):
     """
     Calculates angular velocity of the motor using translational velocity and the rover dictionary as inputs.
     """
-    if((isinstance(v, np.ndarray)) or (np.isscalar(v))) != True:
+    if((isinstance(v, np.ndarray)) or (np.isscalar(v)) or (isinstance(v, float)) ) != True:
         raise Exception('Translational velocity must be a scalar or numpy array')
     if (isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')
@@ -273,7 +273,10 @@ def rover_dynamics(t, y, rover, planet, experiment):
     return dydt
 
 def mechpower(v, rover):
-    if((isinstance(v, np.ndarray)) or (np.isscalar(v))) != True:
+    '''
+    This function calculates the rover's power at each velocity. It uses translational velocity and the rover dictionary to do this.
+    '''
+    if((isinstance(v, np.ndarray)) or (np.isscalar(v)) or (isinstance(v, float))) != True:
         raise Exception('Translational velocity must be a scalar or numpy array')
     if(isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')
@@ -285,6 +288,9 @@ def mechpower(v, rover):
     return P
 
 def battenergy(t, v, rover):
+    '''
+    This function calculates how much energy is used to run all 6 motors during the trip. Since it is looking at the entire trip the function uses instanenous time and velocity. It also uses the rover dictionary. 
+    '''
     if len(t) != len(v):
         raise Exception('Array t and v are not the same size')
     if isinstance(rover, dict) != True:
@@ -307,6 +313,10 @@ def battenergy(t, v, rover):
     return E
 
 def simulate_rover(rover, planet, experiment, end_event):
+    '''
+    This function is the most important. The function calculates all the telemtry values of the trip. It first takes in many dictionaries. Then the code calls rover_dynamics
+    to create the derivative funcitions of accleration and velocity. Using both A and V is solve the ivp to get the orginal vleocity and postion values. Using V and X the codes all the telemtry values of the trip.
+    '''
     if isinstance(rover, dict) != True:
         raise Exception('Rover must be a dictonary')
     if isinstance(planet, dict) != True:
@@ -341,6 +351,7 @@ def simulate_rover(rover, planet, experiment, end_event):
     return rover
     
 def end_of_mission_event(end_event):
+    # this code was given to us
     """
     Defines an event that terminates the mission simulation. Mission is over
     when rover reaches a certain distance, has moved for a maximum simulation
