@@ -225,10 +225,11 @@ def F_rolling(omega, terrain_angle, rover, planet, Crr):
     return Frr
 
 def motorW(v, rover):
+    """
+    Calculates angular velocity of the motor using translational velocity and the rover dictionary as inputs.
+    """
     if((isinstance(v, np.ndarray)) or (np.isscalar(v))) != True:
         raise Exception('Translational velocity must be a scalar or numpy array')
-    if v.ndim > 1:
-        raise Exception('Translational velocity can not be a dictionary')
     if (isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')
     
@@ -241,6 +242,9 @@ def motorW(v, rover):
     return w
 
 def rover_dynamics(t, y, rover, planet, experiment):
+    """
+    Creates the two derivative equations of velocity and acceleration. It does this by taking in time, position, and dictionaries. 
+    """
     if np.isscalar(t) != True:
         raise Exception('Time sample must be a scalar')
     if (y.ndim == 1 or y.size == 2) != True :
@@ -264,7 +268,7 @@ def rover_dynamics(t, y, rover, planet, experiment):
     mass = get_mass(rover)
     a = f_net/mass
     
-    dydt = np.array([a,v])
+    dydt = np.array([v,a])
     
     return dydt
 
