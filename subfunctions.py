@@ -292,7 +292,7 @@ def mechpower(v, rover):
     
     omega = motorW(v, rover)   
     tau = tau_dcmotor(omega, motor)
-    P = 6 * tau * omega
+    P = tau * omega
     
     return P
 
