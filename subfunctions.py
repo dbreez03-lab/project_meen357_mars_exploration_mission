@@ -322,9 +322,7 @@ def battenergy(t, v, rover):
 
     battery_power = np.divide(6 * power, effcy, out=np.zeros_like(power, dtype=float), where=effcy != 0)
     E = trapezoid(battery_power, x=t)
-    
-    E = simpson(6 * power/effcy, x=t)
-    
+        
     return E
 
 def simulate_rover(rover, planet, experiment, end_event):
