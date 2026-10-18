@@ -6,12 +6,14 @@ from define_experiment import experiment1
 
 experiment, end_event = experiment1() #imports for exp1
 
+#loads dictionary experiment
 alpha_dist = experiment['alpha_dist']
 alpha_deg = experiment['alpha_deg']
 
 dist = np.linspace(0.0, alpha_dist, 100)
+#interpolates values of alpha_dist(x) and alpha_deg(y) using a third order polynomial 'cubic'
 alpha_fun = interp1d(alpha_dist, alpha_deg, kind = 'cubic', fill_value = 'extrapolate')
-terrain_angle = alpha_fun(dist)
+terrain_angle = alpha_fun(dist)#calls function alpha_fun
 
 plt.figure(figsize=(8,5))
 plt.scatter(dist, terrain_angle, marker='*')
