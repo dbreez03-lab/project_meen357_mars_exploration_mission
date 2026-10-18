@@ -227,6 +227,9 @@ def F_rolling(omega, terrain_angle, rover, planet, Crr):
 def motorW(v, rover):
     """
     Calculates angular velocity of the motor using translational velocity and the rover dictionary as inputs.
+    
+    Funtion Inputs: v, rover
+    Function Outputs: w
     """
     if((isinstance(v, np.ndarray)) or (np.isscalar(v)) or (isinstance(v, float)) ) != True:
         raise Exception('Translational velocity must be a scalar or numpy array')
@@ -244,6 +247,9 @@ def motorW(v, rover):
 def rover_dynamics(t, y, rover, planet, experiment):
     """
     Creates the two derivative equations of velocity and acceleration. It does this by taking in time, position, and dictionaries. 
+    
+    Funtion Inputs: t, y, rover, planet, experiment
+    Function Outputs: dydt
     """
     if np.isscalar(t) != True:
         raise Exception('Time sample must be a scalar')
@@ -275,6 +281,9 @@ def rover_dynamics(t, y, rover, planet, experiment):
 def mechpower(v, rover):
     '''
     This function calculates the rover's power at each velocity. It uses translational velocity and the rover dictionary to do this.
+    
+    Funtion Inputs: v, rover
+    Function Outputs: P
     '''
     if((isinstance(v, np.ndarray)) or (np.isscalar(v)) or (isinstance(v, float))) != True:
         raise Exception('Translational velocity must be a scalar or numpy array')
@@ -283,26 +292,27 @@ def mechpower(v, rover):
     
     omega = motorW(v, rover)   
     tau = tau_dcmotor(omega, motor)
-    P = tau * omega
+    P = 6 * tau * omega
     
     return P
 
 def battenergy(t, v, rover):
     '''
     This function calculates how much energy is used to run all 6 motors during the trip. Since it is looking at the entire trip the function uses instanenous time and velocity. It also uses the rover dictionary. 
+    
+    Funtion Inputs: t, v, rover
+    Function Outputs: E
     '''
     if len(t) != len(v):
         raise Exception('Array t and v are not the same size')
     if isinstance(rover, dict) != True:
         raise Exception('Rover is not a dictionary')
         
-    omega = motorW(v, rover) 
-    tau = tau_dcmotor(omega, motor)
-    
     power = mechpower(v, rover)
+    tau = tau_dcmotor(motorW(v, rover), motor)
     
-    effcy = motor['effcy']
-    effcy_tau = motor['effcy_tau']
+    effcy = rover['wheel_assembly']['motor']['effcy']
+    effcy_tau = rover['wheel_assembly']['motor']['effcy_tau']
 
     effcy_fun = interp1d(effcy_tau, effcy, kind = 'cubic', fill_value = 'extrapolate')
     effcy = effcy_fun(tau)
@@ -316,6 +326,9 @@ def simulate_rover(rover, planet, experiment, end_event):
     '''
     This function is the most important. The function calculates all the telemtry values of the trip. It first takes in many dictionaries. Then the code calls rover_dynamics
     to create the derivative funcitions of accleration and velocity. Using both A and V is solve the ivp to get the orginal vleocity and postion values. Using V and X the codes all the telemtry values of the trip.
+    
+    Funtion Inputs: rover, planet, experiment, end_event
+    Function Outputs: rover
     '''
     if isinstance(rover, dict) != True:
         raise Exception('Rover must be a dictonary')
@@ -377,4 +390,3 @@ def end_of_mission_event(end_event):
     # (negative)
     events = [distance_left, time_left, velocity_threshold]
     return events
-
