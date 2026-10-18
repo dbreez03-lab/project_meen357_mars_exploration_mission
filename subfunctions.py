@@ -268,7 +268,7 @@ def rover_dynamics(t, y, rover, planet, experiment):
     mass = get_mass(rover)
     a = f_net/mass
     
-    dydt = np.array([v,a])
+    dydt = np.array([a,v])
     
     return dydt
 
@@ -323,8 +323,8 @@ def simulate_rover(rover, planet, experiment, end_event):
     fun = lambda t, y: rover_dynamics(t, y, rover, planet, experiment)
     sol = solve_ivp (fun, tspan, y0, method = 'RK45', max_step = 0.5, events = events)
     t = sol.t
-    x = sol.y[0, :]
-    v = sol.y[1, :]
+    v = sol.y[0, :]
+    x = sol.y[1, :]
     
     rover['telemetry'] = {}
     rover['telemetry']['Time'] = t
