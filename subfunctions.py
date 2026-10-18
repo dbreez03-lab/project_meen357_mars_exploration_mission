@@ -3,6 +3,7 @@ import math
 from scipy.special import erf
 from scipy.interpolate import interp1d
 from scipy.integrate import simpson
+from scipy.integrate import quad
 from scipy.integrate import solve_ivp
 from define_experiment import experiment1
 
@@ -321,7 +322,7 @@ def battenergy(t, v, rover):
     effcy = effcy_fun(tau)
 
     
-    E = simpson(6 * power/effcy, x=t)
+    E = quad(6 * power/effcy, x=t)
     
     return E
 
