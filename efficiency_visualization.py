@@ -4,15 +4,17 @@ import numpy as np
 from scipy.interpolate import interp1d
 from subfunctions import motor
 
+#gets dictionaries loaded
 effcy = motor['effcy']
 effcy_tau = motor['effcy_tau']
 tau_max = motor['torque_stall']
 tau_min = motor['torque_noload']
 
+#interpolates y values of effcy_tau using a third order polynomial
 effcy_fun = interp1d(effcy_tau, effcy, kind = 'cubic', fill_value = 'extrapolate')
 
 tau = np.linspace(tau_min, tau_max, 100)
-effcy = effcy_fun(tau)
+effcy = effcy_fun(tau) #calls function effcy_fun
 
 plt.figure(figsize=(8,5))
 plt.scatter(tau, effcy, marker='*')
