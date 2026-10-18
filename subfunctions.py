@@ -309,7 +309,8 @@ def battenergy(t, v, rover):
         raise Exception('Rover is not a dictionary')
         
     power = mechpower(v, rover)
-    tau = tau_dcmotor(motorW(v, rover), motor)
+    omega = motorW(v, rover)   
+    tau = tau_dcmotor(omega, motor)
     
     effcy = rover['wheel_assembly']['motor']['effcy']
     effcy_tau = rover['wheel_assembly']['motor']['effcy_tau']
@@ -318,7 +319,7 @@ def battenergy(t, v, rover):
     effcy = effcy_fun(tau)
 
     
-    E = simpson(power/effcy, x=t)
+    E = simpson(6 * power/effcy, x=t)
     
     return E
 
