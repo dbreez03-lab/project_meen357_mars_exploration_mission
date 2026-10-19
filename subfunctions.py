@@ -236,13 +236,13 @@ def motorW(v, rover):
     if (isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')
     
-    r = (rover['wheel_assembly']['wheel']['radius'])
-    speed_reducer = (rover['wheel_assembly']['speed_reducer'])
-    Ng = get_gear_ratio(speed_reducer)
+    r = (rover['wheel_assembly']['wheel']['radius']) #gets radius from rover dictionary
+    speed_reducer = (rover['wheel_assembly']['speed_reducer']) #gets speed reducer from rover dict
+    Ng = get_gear_ratio(speed_reducer) #gets 
     
-    w = Ng * v / r
+    w = Ng * v / r #computes rotation speed from ratio times velocity divided by radius
     
-    return w
+    return w #rotation speed
 
 def rover_dynamics(t, y, rover, planet, experiment):
     """
@@ -290,10 +290,10 @@ def mechpower(v, rover):
     if(isinstance(rover, dict) != True):
         raise Exception('Rover must be a dictionary')
     
-    omega = motorW(v, rover)
-    motor = rover['wheel_assembly']['motor']
-    tau = tau_dcmotor(omega, motor)
-    P = tau * omega
+    omega = motorW(v, rover) #gets angular velocity from function motorW
+    motor = rover['wheel_assembly']['motor'] #loads motor from rover dict
+    tau = tau_dcmotor(omega, motor) #gets torque from tau_dcmotor
+    P = tau * omega #power equation
     
     return P
 
@@ -308,20 +308,24 @@ def battenergy(t, v, rover):
         raise Exception('Array t and v are not the same size')
     if isinstance(rover, dict) != True:
         raise Exception('Rover is not a dictionary')
-        
-    power = mechpower(v, rover)
-    omega = motorW(v, rover)   
-    motor = rover['wheel_assembly']['motor']
-    tau = tau_dcmotor(omega, motor)
+        n
+    power = mechpower(v, rover) #power from mechpower
+    omega = motorW(v, rover) #angular velocity
+    motor = rover['wheel_assembly']['motor'] #gets motor from rover dict
+    tau = tau_dcmotor(omega, motor) #torque from tau_dcmotor
     
-    effcy = rover['wheel_assembly']['motor']['effcy']
-    effcy_tau = rover['wheel_assembly']['motor']['effcy_tau']
+    effcy = rover['wheel_assembly']['motor']['effcy'] #gets effcy from rover dict
+    effcy_tau = rover['wheel_assembly']['motor']['effcy_tau'] #gets effcy_tau rom rover dict
 
+    #interpolates using a third order polynomial takes four values using general form P(x) = ax^3 + bx^2 + cx + d
+    #solves for coefficinets then solves using system of equations to print effcy, existing values will remain
     effcy_fun = interp1d(effcy_tau, effcy, kind = 'cubic', fill_value = 'extrapolate')
-    effcy = effcy_fun(tau)
+    effcy = effcy_fun(tau) #effcy_fun interpolates tau from tau_dcmotor
 
     battery_power = np.divide(6 * power, effcy, out=np.zeros_like(power, dtype=float), where=effcy != 0)
-    E = trapezoid(battery_power, x=t)
+    #divides total power by efficiency np.array to calculate total power, out and where parameter safeguards
+    #divisible by zero crashes
+    E = trapezoid(battery_power, x=t)#uses trapizoidal rule to calculate total energy used from battery power over time
         
     return E
 
