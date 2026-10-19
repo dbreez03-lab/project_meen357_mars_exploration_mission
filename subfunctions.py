@@ -269,12 +269,12 @@ def rover_dynamics(t, y, rover, planet, experiment):
     terrain_angle = alpha_fun(x) 
     
     w = motorW(v, rover) #same as omega
-    Crr = (experiment['Crr']) 
+    Crr = (experiment['Crr']) #calls the specific experiment we are trying to do
     f_net = F_net(w, terrain_angle, rover, planet, Crr) #using old function to get force
-    mass = get_mass(rover)
-    a = f_net/mass # equivalent to d^2t/dx^2
+    mass = get_mass(rover) #get mass of the rover 
+    a = f_net/mass # equivalent to d^2t/dx^2 or dv/dt
     
-    dydt = np.array([a,v]) #array of d^2t/dx^2 and dy/dt 
+    dydt = np.array([a,v]) #array of dy/dt and dy/dt 
     
     return dydt
 
@@ -346,27 +346,27 @@ def simulate_rover(rover, planet, experiment, end_event):
     if isinstance(end_event, dict) != True:
         raise Exception('end_event must be a dictonary')
         
-    tspan = experiment['time_range']
-    y0 = experiment['initial_conditions']
-    events = end_of_mission_event(end_event)
+    tspan = experiment['time_range'] #gives length of time 
+    y0 = experiment['initial_conditions'] #give us inital values so we can have a particular solution
+    events = end_of_mission_event(end_event) #gives us the criteria for ending things
     
     fun = lambda t, y: rover_dynamics(t, y, rover, planet, experiment) # function generator of both derivative funcs
     sol = solve_ivp (fun, tspan, y0, method = 'RK45', max_step = 0.5, events = events) # get the v, x in that order using and ode solver
-    t = sol.t
-    v = sol.y[0, :] 
-    x = sol.y[1, :]
+    t = sol.t #the indpendent variable of the equations
+    v = sol.y[0, :] # since we did dv/dt first in rover_dyanmics the sollution of solve ivp has velocity first
+    x = sol.y[1, :] # since we had dx/dt second in rover_dynamics the solution of solve ivp has position second
     
-    rover['telemetry'] = {}
-    rover['telemetry']['Time'] = t
-    rover['telemetry']['velocity'] = v
-    rover['telemetry']['position'] = x
-    rover['telemetry']['completion_time'] = t[-1]-t[0]
-    rover['telemetry']['distance_traveled'] = x[-1] - x[0]
-    rover['telemetry']['max_velocity'] = np.max(v)
-    rover['telemetry']['average_velocity'] = (x[-1] - x[0])/(t[-1]-t[0])
-    rover['telemetry']['power'] = mechpower(v, rover)
-    rover['telemetry']['battery_energy'] = battenergy(t, v, rover)
-    rover['telemetry']['energy_per_distance'] = (battenergy(t, v, rover))/(x[-1] - x[0])
+    rover['telemetry'] = {} # creating the dictonary
+    rover['telemetry']['Time'] = t # putting in the time bounds we used
+    rover['telemetry']['velocity'] = v # putting in what we got for velocity above
+    rover['telemetry']['position'] = x # putting in what we got for position above
+    rover['telemetry']['completion_time'] = t[-1]-t[0] # gets the last value of the array - the first to get total time
+    rover['telemetry']['distance_traveled'] = x[-1] - x[0] # gets the last value of the array - the first to get total distance
+    rover['telemetry']['max_velocity'] = np.max(v) # finds the max velo using numpy function max
+    rover['telemetry']['average_velocity'] = (x[-1] - x[0])/(t[-1]-t[0]) # simple average velocity of change in postion over change in time
+    rover['telemetry']['power'] = mechpower(v, rover) # calling mechpower funtion using the calculated velo
+    rover['telemetry']['battery_energy'] = battenergy(t, v, rover) # calling the batteenergy fuction using the calculated velo
+    rover['telemetry']['energy_per_distance'] = (battenergy(t, v, rover))/(x[-1] - x[0]) # doing simple total energy over distance
     
     return rover
     
