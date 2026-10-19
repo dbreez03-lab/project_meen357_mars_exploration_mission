@@ -265,16 +265,16 @@ def rover_dynamics(t, y, rover, planet, experiment):
     v = y[0]
     x = y[1]
     
-    alpha_fun = interp1d(experiment['alpha_dist'], experiment['alpha_deg'], kind = 'cubic', fill_value='extrapolate')
-    terrain_angle = alpha_fun(x)
+    alpha_fun = interp1d(experiment['alpha_dist'], experiment['alpha_deg'], kind = 'cubic', fill_value='extrapolate') #get terrain angle as each distance
+    terrain_angle = alpha_fun(x) 
     
     w = motorW(v, rover) #same as omega
-    Crr = (experiment['Crr'])
-    f_net = F_net(w, terrain_angle, rover, planet, Crr)
+    Crr = (experiment['Crr']) 
+    f_net = F_net(w, terrain_angle, rover, planet, Crr) #using old function to get force
     mass = get_mass(rover)
-    a = f_net/mass
+    a = f_net/mass # equivalent to d^2t/dx^2
     
-    dydt = np.array([a,v])
+    dydt = np.array([a,v]) #array of d^2t/dx^2 and dy/dt 
     
     return dydt
 
@@ -350,10 +350,10 @@ def simulate_rover(rover, planet, experiment, end_event):
     y0 = experiment['initial_conditions']
     events = end_of_mission_event(end_event)
     
-    fun = lambda t, y: rover_dynamics(t, y, rover, planet, experiment)
-    sol = solve_ivp (fun, tspan, y0, method = 'RK45', max_step = 0.5, events = events)
+    fun = lambda t, y: rover_dynamics(t, y, rover, planet, experiment) # function generator of both derivative funcs
+    sol = solve_ivp (fun, tspan, y0, method = 'RK45', max_step = 0.5, events = events) # get the v, x in that order using and ode solver
     t = sol.t
-    v = sol.y[0, :]
+    v = sol.y[0, :] 
     x = sol.y[1, :]
     
     rover['telemetry'] = {}
