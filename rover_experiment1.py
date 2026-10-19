@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 from subfunctions import simulate_rover
 from subfunctions import rover, planet, experiment, end_event
 
-rover = simulate_rover(rover, planet, experiment, end_event)
+rover = simulate_rover(rover, planet, experiment, end_event) # calling the main function with all the specific scenarios of this sepcific mission
 
+#graph setup 
 fig, axs = plt.subplots(3)
 fig.subplots_adjust(hspace = 1.4)
 axs[0].set_title('Position vs. Time')
