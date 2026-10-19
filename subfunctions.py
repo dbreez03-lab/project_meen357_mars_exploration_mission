@@ -324,8 +324,8 @@ def battenergy(t, v, rover):
 
     battery_power = np.divide(6 * power, effcy, out=np.zeros_like(power, dtype=float), where=effcy != 0)
     #divides total power by efficiency np.array to calculate total power, out and where parameter safeguards
-    #divisible by zero crashes
-    E = trapezoid(battery_power, x=t)#uses trapizoidal rule to calculate total energy used from battery power over time
+    #divisible by zero errors
+    E = trapezoid(battery_power, x=t) #uses trapizoidal rule to calculate total energy used from battery power over time
         
     return E
 
